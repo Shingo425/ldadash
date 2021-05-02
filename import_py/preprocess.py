@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 自然言語処理における、前処理関係をまとめたファイル.
-sentiment_analysis.pyでも利用している.
-インポート（import preprocess as pp）して使う想定.
 """
 import re
 import pandas as pd

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 LDA（トピック分析）を行う一連の処理をまとめたファイル.
-※インポートしてLDAクラスのインスタンスメソッド____を実行する想定.on
 """
 import pandas as pd
 import numpy as np
