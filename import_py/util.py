@@ -97,7 +97,7 @@ def train(data,text_col,hinshi,stop_word,topicnum,label_col):
     df["id"] = np.arange(len(df))
     
     # テキスト前処理
-    df["text"] = df[text_col]
+    df["text"] = df[text_col].astype(str)
     df["rep_tweet"] = df["text"].fillna("").map(preprocess.normalize_neologd)
 #    logging.info("parse start")
     

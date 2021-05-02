@@ -53,6 +53,23 @@ color_list =["red",
             "blue",
             "teal",
             "aqua"]
+ 
+tablecss = [{
+    'selector': '.dash-spreadsheet td div',
+    'rule': '''
+    line-height: 15px;
+    max-height: 30px; min-height: 30px; height: 30px;
+    display: block;
+    overflow-y: hidden;
+    '''
+    }]
+tablecsshidden = [{
+    'selector': '.dash-spreadsheet td div',
+    'rule': '''
+    display: None;
+    '''
+    }]
+
 topic_list = [
     4,5,6,7,8
     ]
@@ -215,6 +232,12 @@ app.layout = dbc.Container(
     dbc.Row([html.Div(id='intermediate-value-pkl', style={'display': 'none'})])
     ])]),
 
+    # trainのエラーテキスト
+    dbc.Row([dbc.Col(html.P(id="train-text"),className="text-center") 
+             ]),
+
+
+
     # ダウンロード
     dbc.Row([
     dbc.Col([
@@ -228,14 +251,14 @@ app.layout = dbc.Container(
             dcc.Loading(id="loading-1",
                     children=[html.Div([
                         html.Label(id ="label-scatter-plot"),
-                        dcc.Graph(id='scatter-plot',style={'height':'600px'})
+                        dcc.Graph(id='scatter-plot',style={"display":"None","height":"600px"})
                                 ]
                         )]),md=6),
         dbc.Col(
             dcc.Loading(id="loading-2",
                 children=[html.Div([
                     html.Label(id="label-bar-plot"),
-                    dcc.Graph(id='bar-plot',style={'height':'600px'})]),
+                    dcc.Graph(id='bar-plot',style={"display":"None","height":"600px"})]),
                     # 中間ファイル(表示しない)
                     dbc.Row([html.Div(id='intermediate-value', style={'display': 'none'})])                    
                     ]
@@ -285,15 +308,7 @@ app.layout = dbc.Container(
                          'width': '80%'},
                         {'if': {'column_id': 'label'},
                          'width': '10%'}],
-                    css=[{
-                        'selector': '.dash-spreadsheet td div',
-                        'rule': '''
-                        line-height: 15px;
-                        max-height: 30px; min-height: 30px; height: 30px;
-                        display: block;
-                        overflow-y: hidden;
-                        '''
-                        }],
+
                     ),
         # 中間ファイル(表示しない)
         dbc.Row([html.Div(id='mmm', style={'display': 'none'})])                    
@@ -328,11 +343,15 @@ app.layout = dbc.Container(
     # データ入力前は要素を隠しておくためにstyleを指定 
 
     Output('afterupload-row',"style"),
-    Output('button-exec',"style"),
+    Output('gettweet-exec',"style"),
     Output('btn-twitter',"style"),
+    Output("button-exec","style"),
     
     
-    Output("intermediate-value-pkl","children")
+    Output("intermediate-value-pkl","children"),
+    # n_clicksをNoneにする
+    Output("button-exec","n_clicks")
+    
     ],
     [Input('upload-data', 'contents'),
      Input("gettweet-exec","n_clicks")],
@@ -353,18 +372,18 @@ def update_dataload(contents,gettweetflg, filenames,query,maxnum,check_sjis):
         return [dash.no_update,dash.no_update ,
                 dash.no_update,dash.no_update ,
                 dash.no_update,dash.no_update, dash.no_update,              
-                {"display":"None"},{"display":"None"},{"display":"None"},dash.no_update]
+                {"display":"None"},{},{"display":"None"},{"display":"None"},dash.no_update,dash.no_update]
     
     if contents is not None:
         data,trainedflg,error_flg = util.parse_contents(contents[0], filenames[0],check_sjis)
         if error_flg==1:
             return [dash.no_update,"ファイルの形式はcsvまたはpklを指定してください。",dash.no_update,
                     dash.no_update,dash.no_update,dash.no_update,dash.no_update,
-                    dash.no_update,dash.no_update,dash.no_update,dash.no_update]
+                    dash.no_update,dash.no_update,dash.no_update,dash.no_update,dash.no_update,dash.no_update]
         if error_flg==2:
             return [dash.no_update,"ファイルの読み込み時にエラーが発生しました。文字コードなどを見直してください。",dash.no_update,
                     dash.no_update,dash.no_update,dash.no_update,dash.no_update,
-                    dash.no_update,dash.no_update,dash.no_update,dash.no_update]
+                    dash.no_update,dash.no_update,dash.no_update,dash.no_update,dash.no_update,dash.no_update]
 
             
         
@@ -377,16 +396,16 @@ def update_dataload(contents,gettweetflg, filenames,query,maxnum,check_sjis):
             labelcol.append({'label': "(指定なし)", 'value': "(指定なし)"})
             return [df.to_json(), f"{filenames[0]}({len(df)}レコード)を読み込みました",textcol, labelcol,
                     df.columns[0],"(指定なし)",6,
-                    {},{},{"display":"None"},dash.no_update]
+                    {},{},{"display":"None"},{},dash.no_update,None]
         else:
             # テキスト項目のdropdown作成
             textcol = [{'label': "text", 'value': "text"}]
             # ラベル項目のdroprown作成
             labelcol = [{'label': "label", 'value': "label"}]
             
-            return [dash.no_update, "",textcol, labelcol,
+            return [dash.no_update, data["upload_text"],textcol, labelcol,
                     "text","label",data["topicnum"],
-                    {},{"display":"None"},{"display":"None"},json.dumps(data)]
+                    {},{"display":"None"},{"display":"None"},{"display":"None"},json.dumps(data),None]
     
     else:
         success,df = util.gettweet(APIkey,APItoken,query,maxnum)
@@ -397,11 +416,11 @@ def update_dataload(contents,gettweetflg, filenames,query,maxnum,check_sjis):
             labelcol.append({'label': "(指定なし)", 'value': "(指定なし)"})
             return [df.to_json(), f"twitterからクエリ「{query}」を{len(df)}レコード読み込みました",textcol, labelcol,
                         "text","user.name",6,
-                        {},{},{},dash.no_update]
+                        {},{},{},{},dash.no_update,None]
         else:
             return [dash.no_update,"APIkeyまたはAPItokenが間違っています。",dash.no_update,
                     dash.no_update,dash.no_update,dash.no_update,dash.no_update,
-                    dash.no_update,dash.no_update,dash.no_update,dash.no_update]
+                    dash.no_update,dash.no_update,dash.no_update,dash.no_update,dash.no_update,dash.no_update]
 
         
 
@@ -448,9 +467,12 @@ def update_shousai(check_shousai):
     Output('upload-data-row', 'style'),   
     Output('preupload-text',"style")
     ],
-    [Input('check-gettweet', 'value')]
+    [Input('check-gettweet', 'value'),
+     Input("intermediate-value-pkl","children")]
 )
-def update_gettweet(check_gettweet): 
+def update_gettweet(check_gettweet,pkldata): 
+    if pkldata:
+        return {"display":"None"},{"display":"None"},{"display":"None"},{"display":"None"}
     if check_gettweet:
         return [{},{},{"display":"None"},{"display":"None"}]
     else:
@@ -464,7 +486,10 @@ def update_gettweet(check_gettweet):
     Output('scatter-plot','figure'),
     Output("label-scatter-plot","children"),
     Output("label-bar-plot","children"),
-    Output("mmm","children")
+    Output("mmm","children"),
+    Output("train-text","children"),
+    # style
+    Output('scatter-plot','style')
     ],
     [Input("button-exec","n_clicks"),
      Input("intermediate-value-pkl","children")],
@@ -473,20 +498,21 @@ def update_gettweet(check_gettweet):
      State("dropdown-topicnum","value"),
      State("input-stopword","children"),
      State("check-hinshi","children"),
-     State('intermediate-value0', 'children')]
+     State('intermediate-value0', 'children'),
+     State("upload-text","children")]
 )
-def update_result1(n,jsondata,text_col,label_col,topicnum,stop_word_c,hinshi_c,contents): 
+def update_result1(n,pkldata,text_col,label_col,topicnum,stop_word_c,hinshi_c,contents,upload_text): 
 #    text_col,label_col,id_col,topicnum,stop_word,hinshi="body","media","(指定なし)",6,[],["名詞/一般","名詞/固有名詞"]
     np.random.seed(1)
-    # データは読みこまない
-    #df = pd.read_csv("../ldadash/data/livedoornews.csv")
     # コールバックが起こるがまだデータはアップロードされていないので、例外処理を行う
+    if n is None and pkldata is None:
+        return dash.no_update,dash.no_update,dash.no_update,dash.no_update,dash.no_update,"",{"height":"600px","display":"None"}
+    
+    if contents is None and pkldata is None:
+        return dash.no_update,dash.no_update,dash.no_update,dash.no_update,dash.no_update,"",{"height":"600px","display":"None"}
 
-    if contents is None and jsondata is None:
-        raise dash.exceptions.PreventUpdate
 
-
-    if jsondata is None:
+    if pkldata is None:
         if stop_word_c is None:
             stop_word = []
         else:
@@ -495,10 +521,16 @@ def update_result1(n,jsondata,text_col,label_col,topicnum,stop_word_c,hinshi_c,c
             hinshi = ["名詞/一般","名詞/固有名詞"]
         else:
             hinshi = hinshi_c[1]["props"]["value"]
-        plot_df,topic_word_df = util.train(contents,text_col,hinshi,stop_word,topicnum,label_col)
+        try:
+            plot_df,topic_word_df = util.train(contents,text_col,hinshi,stop_word,topicnum,label_col)
+        except:
+            return [dash.no_update,dash.no_update,dash.no_update,
+                    dash.no_update,dash.no_update,
+                    "training中にエラーが発生しました。テキスト解析対象項目などを確認してください。",
+                    {"height":"600px","display":"None"}]
 
     else:
-        data = json.loads(jsondata)
+        data = json.loads(pkldata)
         plot_df,topic_word_df = pd.read_json(data["plot_df"]),pd.read_json(data["topic_word_df"])
         stop_word,hinshi = data["stop_word"],data["hinshi"]
         
@@ -528,26 +560,33 @@ def update_result1(n,jsondata,text_col,label_col,topicnum,stop_word_c,hinshi_c,c
              "plot_df":plot_df.to_json(),
              "topicnum":topicnum,
              "stop_word":stop_word,
-             "hinshi":hinshi
+             "hinshi":hinshi,
+             "upload_text":upload_text
              }
     return [json.dumps(dicts),
             scatter_fig,
             "トピックの可視化",
-            "トピック-単語分布(縦軸：単語、横軸：トピックに対する単語の構成割合)",""]
+            "トピック-単語分布(縦軸：単語、横軸：トピックに対する単語の構成割合)","","",{"height":"600px"}]
 # トピック-単語分布を作成
 # scatterで選んだトピック以外をグレーにする
 @app.callback([
      Output('bar-plot', 'figure'),
+     # style
+     Output('bar-plot', 'style')
     ],
     [
      Input('scatter-plot', 'selectedData'),
-     Input('intermediate-value', 'children')],
-     [State("dropdown-topicnum","value")]
+     Input('intermediate-value', 'children'),
+     Input("button-exec","n_clicks")],
+     [State("dropdown-topicnum","value")
+      ]
 )
-def update_result2(selectdata,intermediate_value,topicnum):
+def update_result2(selectdata,intermediate_value,n,topicnum):
     n_cluster=topicnum
+    if n is None:
+        return dash.no_update,{'height':'600px',"display":"None"}
     if intermediate_value is None:
-        raise dash.exceptions.PreventUpdate
+        return dash.no_update,{'height':'600px',"display":"None"}
     data = json.loads(intermediate_value)
     topic_word_df = pd.read_json(data["topic_word_df"])
     
@@ -566,7 +605,7 @@ def update_result2(selectdata,intermediate_value,topicnum):
                                  orientation='h'),
                       row=i//colnum+1, col=i%colnum+1)
     bar_fig.update_layout(showlegend=False)
-    return [bar_fig]
+    return [bar_fig,{'height':'600px'}]
 
 # テーブルを表示
 # scatterで選んだトピックのみに絞る
@@ -574,17 +613,25 @@ def update_result2(selectdata,intermediate_value,topicnum):
     Output('output-data', 'data'),
      Output('output-data', 'columns'),
      Output("output-caption","children"),
-    Output("btn-pkl","style"),
+     # style
+     Output("btn-pkl","style"),
      Output("btn-topicword","style"),
-     Output("btn-doctopic","style")
+     Output("btn-doctopic","style"),
+     Output("output-data","css")
+     
     ],
     [Input('scatter-plot', 'selectedData'),
-     Input('intermediate-value', 'children')]
+     Input('intermediate-value', 'children'),
+    Input("button-exec","n_clicks")]
 )
-def update_table(selectdata,intermediate_value):
+def update_table(selectdata,intermediate_value,n):
+    if n is None:
+        return [dash.no_update,dash.no_update,dash.no_update,
+                {"display":"None"},{"display":"None"},{"display":"None"},tablecsshidden]        
+    
     if intermediate_value is None :
         return [dash.no_update,dash.no_update,dash.no_update,
-                {"display":"None"},{"display":"None"},{"display":"None"}]
+                {"display":"None"},{"display":"None"},{"display":"None"},tablecsshidden]
     data = json.loads(intermediate_value)
     plot_df = pd.read_json(data["plot_df"])
     if selectdata:
@@ -597,7 +644,7 @@ def update_table(selectdata,intermediate_value):
     columns=[{"name": i, "id": i} for i in plot_df.columns]
     data=plot_df.to_dict('records')
 
-    return [data,columns,output_caption,{"display":"block"},{"display":"block"},{"display":"block"}]
+    return [data,columns,output_caption,{},{},{},tablecss]
 
 
 # twitterデータをダウンロード
@@ -639,7 +686,7 @@ def downloadpicke(n_nlicks,intermediate_value):
               [State("intermediate-value","children"),
                State("check-sjis","value")])
 def downloadtopicword(n_nlicks,intermediate_value,check_sjis):
-    if n_nlicks is None:
+    if n_nlicks is None :
         raise dash.exceptions.PreventUpdate
     data = json.loads(intermediate_value)
     topic_word_df = pd.read_json(data["topic_word_df"])
@@ -648,7 +695,7 @@ def downloadtopicword(n_nlicks,intermediate_value,check_sjis):
     topic_word_df.to_csv(io1,index=False,encoding=enc)    
     str_outputs = io1.getvalue().encode(enc,errors="ignore")
     return dict(content=base64.b64encode(str_outputs).decode(),
-                 filename="tweet_output.csv",base64=True)
+                 filename="topicword_output.csv",base64=True)
 
 # 文書-トピック分布をダウンロード
 @app.callback(Output("download-doctopic", "data"),
@@ -665,7 +712,7 @@ def downloaddoctopic(n_nlicks,intermediate_value,check_sjis):
     plot_df.to_csv(io1,index=False,encoding=enc)    
     str_outputs = io1.getvalue().encode(enc,errors="ignore")
     return dict(content=base64.b64encode(str_outputs).decode(),
-                 filename="tweet_output.csv",base64=True)
+                 filename="doctopic_output.csv",base64=True)
 if __name__ == '__main__':
-    app.run_server(debug=False,host="0.0.0.0",port=8050)
+    app.run_server(debug=True,host="0.0.0.0",port=8050)
 
