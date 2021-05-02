@@ -11,21 +11,24 @@ ldadashは、テキストを入力してクラスタリングを行い、可視�
 https://twitter.com/shingo97358922
 
 ## インストール方法
+以下の1〜3のいずれかを実行してください。
 
 ### docker(推奨)
-twitter取得機能なし
+1. twitter取得機能なし
 ```bash
 docker run -it -p 8050:8050 shingo425/ldadash
 ```
-twitter取得機能あり(Twitter APIの申請が必要です。)
+2. twitter取得機能あり(Twitter APIの申請が必要です。)
 ```bash
 docker run -it -p 8050:8050 -e TWEET_API_KEY=<your tweet api key> -e TWEET_API_TOKEN=<your tweet api token> shingo425/ldadash
 ```
 起動させた後、ブラウザに「localhost:8080」を入力してください。
+
 ※ dockerのメモリ割り当てが足りないと、メモリエラーになる場合があります。割り当てるメモリは大きめに設定してください。
 
 
 ### conda + git clone
+3. conda+git clone
 ```
 conda create -n ldadash python=3.7
 git clone https://github.com/Shingo425/ldadash.git
@@ -74,15 +77,20 @@ TWEET_API_TOKEN=<your tweet api token>
 
 ### twitterから取得
 twitterから取得します。API申請が必要になります。
+
 エンドポイントは https://api.twitter.com/1.1/search/tweets.json で、　Bearer Tokenを使用しています。このエンドポイントは無料枠のみであるので、有料になる心配はありません。
+
 WEBアプリとして公開するときは、APIkeyやAPItokenの取扱いについては注意してください。
+
 ![image4](/image/image4.png) 
 
 ⑩ TWEET_API_KEYとTWEET_API_SECRETを環境変数として入力すると、「twitterから取得」というボタンが現れます。
+
 ⑪ 以下の項目を入力します。
 * 検索クエリ... twitterを検索するクエリ。RTを除く場合は-RTを入れましょう。""で囲むと、正確にその単語が入った単語になります。
 * 取得件数... 取得する件数を指定します。APIの都合上、45000件/15minです。過去7日間しか取得できませんので、取得できた数のみ解析します。
 
 ## その他
 * このアプリを使用する際は、このgithubのURL、またはtwitterアカウントをクレジットとして入れていただければ、自由に使用、改変、提供等をしていただいて構いません。また、アプリに関する不具合が出た場合、責任は負いません。(MITライセンスです。)
+
 * 感想、疑問点等ありましたら、リプライしていただけるとありがたいです。
