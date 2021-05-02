@@ -714,5 +714,5 @@ def downloaddoctopic(n_nlicks,intermediate_value,check_sjis):
     return dict(content=base64.b64encode(str_outputs).decode(),
                  filename="doctopic_output.csv",base64=True)
 if __name__ == '__main__':
-    app.run_server(debug=True,host="0.0.0.0",port=8050)
+    app.run_server(debug=False,host="0.0.0.0",port=8050)
 
