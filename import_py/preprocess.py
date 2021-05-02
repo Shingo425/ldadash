@@ -166,23 +166,6 @@ def normalize_neologd(s):
     s = re.sub('[”]', '"', s)
     return s
 
-# #形態素解析用モジュール
-# def parse(tweet_temp,path=""):
-#     """
-#         mecabで形態素解析してリストで返す
-#     input:
-#         tweet_temp :文字列
-#         path       :システム辞書のパスを指定（デフォルトから変更する場合）
-#     output:
-#         形態素解析結果のリスト
-#     """
-#     t = MeCab.Tagger(path)
-#     temp1 = t.parse(tweet_temp)
-#     temp2 = temp1.split("\n")[:-2]
-#     t_list = [ [i.split("\t")[0]] + i.split("\t")[1].split(",") for i in temp2]
-#     return t_list
-
-# Taggerは作成時間がかかるため、関数の外で呼び出す形に変更
 
 def parse(Text,param=None):
     """
