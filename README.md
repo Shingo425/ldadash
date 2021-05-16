@@ -22,7 +22,7 @@ docker run -it -p 8050:8050 shingo425/ldadash
 ```bash
 docker run -it -p 8050:8050 -e TWEET_API_KEY=<your tweet api key> -e TWEET_API_TOKEN=<your tweet api token> shingo425/ldadash
 ```
-起動させた後、ブラウザに「localhost:8080」を入力してください。
+起動させた後、ブラウザに「localhost:8050」を入力してください。
 
 ※ dockerのメモリ割り当てが足りないと、メモリエラーになる場合があります。割り当てるメモリは大きめに設定してください。
 
